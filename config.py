@@ -22,7 +22,7 @@ GOOGLE_OAUTH_SCOPES = [
 ]
 
 # Gemini Model Selection (Defaults to gemini-2.5-flash)
-GEMINI_MODEL = "gemini-2.5-flash"
+GEMINI_MODEL = "gemini-3-flash-preview"
 
 # Default logic constants
 DEFAULT_MIN_SUBSCRIBERS = 10000

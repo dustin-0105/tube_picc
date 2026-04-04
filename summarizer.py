@@ -1,5 +1,5 @@
 import os
-import google.generativeai as genai
+from google import genai
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api.formatters import TextFormatter
 import config
@@ -35,12 +35,9 @@ def summarize_video(video_data, prompt_text):
     video_data: dict containing title, description, url, video_id
     prompt_text: the system prompt text to guide Gemini
     """
-    genai.configure(api_key=config.GEMINI_API_KEY)
     if not config.GEMINI_API_KEY:
         raise ValueError("GEMINI_API_KEY is not set in the environment.")
-    
-    # Initialize the specific model defined in configuration
-    model = genai.GenerativeModel(config.GEMINI_MODEL)
+    client = genai.Client(api_key=config.GEMINI_API_KEY)
     
     # 1. Fetch transcript or construct a fallback context string
     fallback_metadata = f"Title: {video_data.get('title', 'Unknown')}\nDescription: {video_data.get('description', 'Unknown')}"
@@ -51,9 +48,11 @@ def summarize_video(video_data, prompt_text):
     
     # 3. Request generation from Gemini
     # Adding a generation config could be helpful to control temperature if needed.
-    response = model.generate_content(
-        full_prompt,
-        generation_config=genai.types.GenerationConfig(
+    from google.genai import types
+    response = client.models.generate_content(
+        model=config.GEMINI_MODEL,
+        contents=full_prompt,
+        config=types.GenerateContentConfig(
             temperature=0.7, # Balanced for summary creation
         )
     )

@@ -2,7 +2,7 @@ import os
 import re
 from datetime import datetime, timedelta, timezone
 from googleapiclient.discovery import build
-import google.generativeai as genai
+from google import genai
 import config
 from sheets_manager import get_curated_video_ids
 
@@ -40,8 +40,7 @@ def select_fresh_video_with_ai(candidates, past_titles, content_target):
     if len(candidates) == 1 or not past_titles:
         return candidates[0]
         
-    genai.configure(api_key=config.GEMINI_API_KEY)
-    model = genai.GenerativeModel(config.GEMINI_MODEL)
+    client = genai.Client(api_key=config.GEMINI_API_KEY)
     
     # Safely truncate past titles if too many to fit in context window nicely
     safe_past_titles = past_titles[-20:] # Last 20 recommended titles
@@ -70,7 +69,10 @@ def select_fresh_video_with_ai(candidates, past_titles, content_target):
 주의: 반드시 오직 숫자(예: 3) 하나만 응답해야 합니다. 다른 말이나 부가 설명은 일절 금지합니다.
 """
     try:
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model=config.GEMINI_MODEL,
+            contents=prompt
+        )
         # Parse the raw number from text
         match = re.search(r'\d+', response.text)
         if match:
@@ -91,8 +93,7 @@ def generate_search_queries(content_target):
     """
     Uses Gemini AI to generate 3 optimized YouTube search queries based on the user's content target.
     """
-    genai.configure(api_key=config.GEMINI_API_KEY)
-    model = genai.GenerativeModel(config.GEMINI_MODEL)
+    client = genai.Client(api_key=config.GEMINI_API_KEY)
     
     prompt = f"""
 다음은 사용자가 유튜브에서 찾고 싶어하는 콘텐츠에 대한 상세 설명입니다.
@@ -103,7 +104,10 @@ def generate_search_queries(content_target):
 예시: 엑셀 매크로 기초,직장인 엑셀 자동화 튜토리얼,엑셀 VBA 실무,엑셀 실무 꿀팁,엑셀 매크로 만들기
 """
     try:
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model=config.GEMINI_MODEL,
+            contents=prompt
+        )
         queries = response.text.strip().split(',')
         return [q.strip() for q in queries if q.strip()][:5]
     except Exception as e:
