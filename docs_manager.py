@@ -44,7 +44,8 @@ def create_summary_doc(video_data, summary_text, topic_name, related_videos=None
     if related_videos:
         related_md = "\n## 💡 관련 추천 콘텐츠\n"
         for idx, r in enumerate(related_videos, start=1):
-            related_md += f"{idx}. [{r['title']}]({r['url']}) — {r['channel_name']} ({r['duration_mins']}분)\n"
+            duration_str = f" ({r['duration_mins']}분)" if r.get('duration_mins') else ""
+            related_md += f"{idx}. [{r['title']}]({r['url']}) — {r['channel_name']}{duration_str}\n"
             
     content_md = (
         f"# {video_data['title']}\n\n"
