@@ -5,7 +5,7 @@ import re
 from datetime import datetime
 import config
 
-NLM_CLI = "/Users/dustin/.local/bin/nlm"
+NLM_CLI = os.getenv("NLM_CLI_PATH", "nlm")
 
 def run_cli(command_list):
     """Executes a CLI command and returns the stdout output."""
@@ -96,11 +96,12 @@ def create_daily_audio_overview(doc_urls, youtube_urls):
     print(f"✅ Audio generation job triggered. Artifact ID: {artifact_id}")
     
     # 4. Polling for Completion (Max 30 minutes)
-    max_retries = 60 # 60 * 30 seconds = 30 minutes
+    max_retries = config.NLM_POLL_MAX_RETRIES
     retry_count = 0
-    
+
     audio_ready = False
-    print("⏳ Waiting for audio generation (Timeout: 30 mins)...")
+    timeout_mins = (max_retries * config.NLM_POLL_INTERVAL_SECS) // 60
+    print(f"⏳ Waiting for audio generation (Timeout: {timeout_mins} mins)...")
     
     # Check status endpoint with --json or grep
     # NLM studio status lists artifacts
@@ -121,7 +122,7 @@ def create_daily_audio_overview(doc_urls, youtube_urls):
                 print("\n❌ Audio generation FAILED on NotebookLM side.")
                 break
         
-        time.sleep(30)
+        time.sleep(config.NLM_POLL_INTERVAL_SECS)
         retry_count += 1
         
     if not audio_ready:

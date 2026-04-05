@@ -126,7 +126,14 @@ def main():
             )
             
             print(f"  ✅ Uploaded to Google Drive: {public_audio_url}")
-            
+
+            # Clean up temporary audio file
+            try:
+                os.remove(audio_file_path)
+                print(f"  🧹 Cleaned up temp file: {audio_file_path}")
+            except OSError:
+                pass
+
             # Send Slack notification for Podcast
             print("\n▶️ [STEP 8] Sending Master Podcast Notification to Slack...")
             slack_audio_success = send_daily_audio_message(public_audio_url)

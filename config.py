@@ -21,10 +21,26 @@ GOOGLE_OAUTH_SCOPES = [
     'https://www.googleapis.com/auth/spreadsheets'
 ]
 
-# Gemini Model Selection (Defaults to gemini-2.5-flash)
+# Gemini Model Selection
 GEMINI_MODEL = "gemini-3-flash-preview"
 
 # Default logic constants
 DEFAULT_MIN_SUBSCRIBERS = 10000
 DEFAULT_MIN_DURATION_MINS = 10
 DEFAULT_MAX_DURATION_MINS = 60
+DEFAULT_MAX_AGE_DAYS = 180
+
+# AI Editor: number of past titles to consider for duplicate prevention
+AI_EDITOR_PAST_TITLES_LIMIT = 20
+# Maximum video IDs per YouTube API batch request
+YOUTUBE_VIDEO_BATCH_LIMIT = 50
+# AI Editor: top N candidates to evaluate
+AI_EDITOR_TOP_CANDIDATES = 10
+# YouTube search results per query
+YOUTUBE_SEARCH_MAX_RESULTS = 20
+# Number of AI-generated search queries
+AI_SEARCH_QUERY_COUNT = 5
+
+# NotebookLM polling
+NLM_POLL_INTERVAL_SECS = 30
+NLM_POLL_MAX_RETRIES = 60

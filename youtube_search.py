@@ -43,7 +43,7 @@ def select_fresh_video_with_ai(candidates, past_titles, content_target):
     client = genai.Client(api_key=config.GEMINI_API_KEY)
     
     # Safely truncate past titles if too many to fit in context window nicely
-    safe_past_titles = past_titles[-20:] # Last 20 recommended titles
+    safe_past_titles = past_titles[-config.AI_EDITOR_PAST_TITLES_LIMIT:]
     past_titles_str = "\n".join(f"- {title}" for title in safe_past_titles)
     
     candidates_str = ""
@@ -109,7 +109,7 @@ def generate_search_queries(content_target):
             contents=prompt
         )
         queries = response.text.strip().split(',')
-        return [q.strip() for q in queries if q.strip()][:5]
+        return [q.strip() for q in queries if q.strip()][:config.AI_SEARCH_QUERY_COUNT]
     except Exception as e:
         print(f"⚠️ Query generation failed: {e}")
         # Fallback query if AI fails
@@ -175,7 +175,7 @@ def search_educational_videos(topic_name, content_target, max_age_days=365, past
                 q=q,
                 part="id,snippet",
                 type="video",
-                maxResults=20, # 20 per query (total up to 60)
+                maxResults=config.YOUTUBE_SEARCH_MAX_RESULTS,
                 publishedAfter=published_after,
                 relevanceLanguage="ko" 
             ).execute()
@@ -192,8 +192,8 @@ def search_educational_videos(topic_name, content_target, max_age_days=365, past
     if not video_ids:
         return None, []
         
-    # Chunk the IDs for videos().list (max 50 at a time)
-    video_ids = video_ids[:50]
+    # Chunk the IDs for videos().list (YouTube API limit)
+    video_ids = video_ids[:config.YOUTUBE_VIDEO_BATCH_LIMIT]
     
     # 3. Get detailed video metadata (duration, statistics)
     videos_response = youtube.videos().list(
@@ -258,7 +258,7 @@ def search_educational_videos(topic_name, content_target, max_age_days=365, past
     
     # 7. Use AI Editor to pick the featured video ensuring semantic freshness
     print(f"  🤖 Invoking AI Editor to select the best fresh video out of {len(valid_videos)} candidates...")
-    top_candidates = valid_videos[:10] # Give AI the top 10 most popular ones to choose from
+    top_candidates = valid_videos[:config.AI_EDITOR_TOP_CANDIDATES]
     featured = select_fresh_video_with_ai(top_candidates, past_titles, content_target)
     
     if featured:
@@ -298,7 +298,7 @@ if __name__ == "__main__":
             for r in related:
                 print(f"- {r['title']} | {r['channel_name']} | {r['url']}")
         else:
-            print("❌ No videos found matching the criteria (10k+ subs, 5-30 mins).")
+            print(f"❌ No videos found matching the criteria ({config.DEFAULT_MIN_SUBSCRIBERS}+ subs, {config.DEFAULT_MIN_DURATION_MINS}-{config.DEFAULT_MAX_DURATION_MINS} mins).")
             
     except Exception as e:
         print(f"❌ Error: {e}")

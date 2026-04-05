@@ -43,7 +43,7 @@ def get_active_topics():
         if str(topic.get('is_active', '')).upper() == 'TRUE':
             # Pre-process max_age_days to integer
             try:
-                topic['max_age_days'] = int(topic.get('max_age_days', config.DEFAULT_MAX_DURATION_MINS))
+                topic['max_age_days'] = int(topic.get('max_age_days', config.DEFAULT_MAX_AGE_DAYS))
             except ValueError:
                 topic['max_age_days'] = 180
                 
